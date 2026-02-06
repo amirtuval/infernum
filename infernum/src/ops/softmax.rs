@@ -7,7 +7,8 @@ use crate::tensor::Tensor;
 use crate::Result;
 
 const SOFTMAX_KERNEL: &str = r#"
-#include <math_constants.h>
+// CUDA doesn't have INFINITY in NVRTC, use the IEEE 754 representation
+#define INFINITY __int_as_float(0x7f800000)
 
 extern "C" __global__ void softmax_f32(
     float* __restrict__ output,
@@ -23,7 +24,7 @@ extern "C" __global__ void softmax_f32(
     float* row_output = output + row * row_size;
     
     // Step 1: Find max (for numerical stability)
-    float local_max = -CUDART_INF_F;
+    float local_max = -INFINITY;
     for (int i = tid; i < row_size; i += blockDim.x) {
         local_max = fmaxf(local_max, row_input[i]);
     }
@@ -90,7 +91,7 @@ extern "C" __global__ void softmax_causal_f32(
     const int max_valid_k = query_idx + position_offset + 1;
     
     // Step 1: Find max (only over valid positions)
-    float local_max = -CUDART_INF_F;
+    float local_max = -INFINITY;
     for (int i = tid; i < row_size && i < max_valid_k; i += blockDim.x) {
         local_max = fmaxf(local_max, row_input[i]);
     }
