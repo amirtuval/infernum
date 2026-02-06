@@ -20,6 +20,10 @@ pub enum Error {
     #[error("NVRTC error: {0}")]
     Nvrtc(#[from] cudarc::nvrtc::result::NvrtcError),
 
+    #[cfg(feature = "cuda")]
+    #[error("NVRTC compile error: {0}")]
+    NvrtcCompile(#[from] cudarc::nvrtc::CompileError),
+
     #[error("Shape mismatch: expected {expected:?}, got {got:?}")]
     ShapeMismatch {
         expected: Vec<usize>,
