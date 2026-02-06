@@ -1,10 +1,10 @@
 //! Attention operation
 
-use cudarc::cublas::{Gemm, GemmConfig};
-use cudarc::driver::{DeviceRepr, LaunchAsync, LaunchConfig};
+use cudarc::driver::{LaunchAsync, LaunchConfig};
 
 use crate::cuda::CudaTensor;
-use crate::ops::{matmul, softmax};
+use crate::ops::matmul;
+use crate::tensor::Tensor;
 use crate::Result;
 
 const SCALE_KERNEL: &str = r#"
@@ -117,7 +117,6 @@ fn transpose_012_to_102(input: &CudaTensor<f32>) -> Result<CudaTensor<f32>> {
     let c = shape[2];
 
     let output_shape = [b, a, c];
-    let mut output = unsafe { CudaTensor::<f32>::uninit(input.context(), &output_shape)? };
 
     // This is inefficient but correct - copy element by element
     // A proper implementation would use a CUDA kernel
@@ -134,7 +133,7 @@ fn transpose_012_to_102(input: &CudaTensor<f32>) -> Result<CudaTensor<f32>> {
         }
     }
 
-    output = CudaTensor::from_slice(input.context(), &output_shape, &output_data)?;
+    let output = CudaTensor::from_slice(input.context(), &output_shape, &output_data)?;
     Ok(output)
 }
 
@@ -222,7 +221,7 @@ fn causal_softmax(scores: &CudaTensor<f32>) -> Result<CudaTensor<f32>> {
     for b in 0..batch {
         for q in 0..seq {
             let row_start = b * seq * seq + q * seq;
-            let row_end = row_start + seq;
+            let _row_end = row_start + seq;
 
             // Find max (for stability) over valid positions
             let max_val = scores_data[row_start..row_start + q + 1]

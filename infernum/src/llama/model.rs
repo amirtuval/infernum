@@ -5,6 +5,7 @@ use std::path::Path;
 use crate::cuda::{CudaContext, CudaTensor};
 use crate::llama::LlamaConfig;
 use crate::ops::{apply_rope, attention, matmul, precompute_rope_cache, rms_norm, silu_mul};
+use crate::tensor::Tensor;
 use crate::weights::{SafeTensorsLoader, WeightLoader};
 use crate::Result;
 
@@ -153,7 +154,7 @@ impl LlamaModel {
     /// # Errors
     /// Returns an error if forward pass fails
     pub fn forward(&self, input_ids: &[u32]) -> Result<CudaTensor<f32>> {
-        let seq_len = input_ids.len();
+        let _seq_len = input_ids.len();
 
         // Embed tokens: (seq_len,) -> (seq_len, hidden_size)
         let mut hidden = self.embed(input_ids)?;
@@ -196,10 +197,10 @@ impl LlamaModel {
         &self,
         hidden: &CudaTensor<f32>,
         layer: &LlamaLayerWeights,
-        layer_idx: usize,
+        _layer_idx: usize,
     ) -> Result<CudaTensor<f32>> {
-        let seq_len = hidden.shape()[0];
-        let hidden_size = self.config.hidden_size;
+        let _seq_len = hidden.shape()[0];
+        let _hidden_size = self.config.hidden_size;
 
         // Pre-attention RMS norm
         let normed = rms_norm(hidden, &layer.input_layernorm, self.config.rms_norm_eps)?;
@@ -307,9 +308,9 @@ fn linear(input: &CudaTensor<f32>, weight: &CudaTensor<f32>) -> Result<CudaTenso
     let input_shape = input.shape();
     let weight_shape = weight.shape();
 
-    let seq_len = input_shape[0];
+    let _seq_len = input_shape[0];
     let in_features = input_shape[1];
-    let out_features = weight_shape[0];
+    let _out_features = weight_shape[0];
 
     assert_eq!(
         weight_shape[1], in_features,

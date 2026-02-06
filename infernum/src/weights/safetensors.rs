@@ -1,7 +1,7 @@
 //! SafeTensors file loading with memory mapping
 
 use memmap2::Mmap;
-use safetensors::tensor::{SafeTensors, TensorView};
+use safetensors::tensor::SafeTensors;
 use std::collections::HashMap;
 use std::fs::File;
 use std::path::{Path, PathBuf};

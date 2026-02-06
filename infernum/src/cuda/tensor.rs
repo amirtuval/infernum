@@ -1,7 +1,6 @@
 //! CUDA tensor implementation
 
-use cudarc::driver::{CudaSlice, DevicePtr, DevicePtrMut, DeviceRepr};
-use std::sync::Arc;
+use cudarc::driver::{CudaSlice, DevicePtr, DevicePtrMut, DeviceRepr, ValidAsZeroBits};
 
 use crate::cuda::CudaContext;
 use crate::dtype::{DType, TensorDType};
@@ -63,7 +62,10 @@ impl<T: TensorDType + DeviceRepr> CudaTensor<T> {
     ///
     /// # Errors
     /// Returns an error if GPU memory allocation fails
-    pub fn zeros(ctx: &CudaContext, shape: &[usize]) -> Result<Self> {
+    pub fn zeros(ctx: &CudaContext, shape: &[usize]) -> Result<Self>
+    where
+        T: ValidAsZeroBits,
+    {
         let numel: usize = shape.iter().product();
         let data = ctx.device().alloc_zeros::<T>(numel)?;
         Ok(Self {

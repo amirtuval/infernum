@@ -1,10 +1,9 @@
 //! RMS Normalization
 
-use cudarc::driver::{CudaFunction, DeviceRepr, LaunchAsync, LaunchConfig};
-use std::sync::Arc;
+use cudarc::driver::{LaunchAsync, LaunchConfig};
 
-use crate::cuda::{CudaContext, CudaTensor};
-use crate::dtype::TensorDType;
+use crate::cuda::CudaTensor;
+use crate::tensor::Tensor;
 use crate::Result;
 
 const RMSNORM_KERNEL: &str = r#"

@@ -3,6 +3,7 @@
 use cudarc::driver::{LaunchAsync, LaunchConfig};
 
 use crate::cuda::CudaTensor;
+use crate::tensor::Tensor;
 use crate::Result;
 
 const SILU_KERNEL: &str = r#"

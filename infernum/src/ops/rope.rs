@@ -3,6 +3,7 @@
 use cudarc::driver::{LaunchAsync, LaunchConfig};
 
 use crate::cuda::{CudaContext, CudaTensor};
+use crate::tensor::Tensor;
 use crate::Result;
 
 const ROPE_KERNEL: &str = r#"

@@ -1,10 +1,11 @@
 //! Matrix multiplication using cuBLAS
 
-use cudarc::cublas::{Gemm, GemmConfig};
+use cudarc::cublas::{CudaBlas, Gemm, GemmConfig};
 use cudarc::driver::DeviceRepr;
 
 use crate::cuda::CudaTensor;
 use crate::dtype::TensorDType;
+use crate::tensor::Tensor;
 use crate::Result;
 
 /// Perform matrix multiplication: C = A @ B
@@ -17,7 +18,8 @@ use crate::Result;
 /// Returns an error if shapes are incompatible or cuBLAS operation fails
 pub fn matmul<T>(a: &CudaTensor<T>, b: &CudaTensor<T>) -> Result<CudaTensor<T>>
 where
-    T: TensorDType + DeviceRepr + Gemm + Default,
+    T: TensorDType + DeviceRepr + GemmScalar + Default,
+    CudaBlas: Gemm<T>,
 {
     let a_shape = a.shape();
     let b_shape = b.shape();
@@ -34,14 +36,11 @@ where
 
             assert_eq!(b_shape[0], k, "Inner dimensions must match");
 
-            let c_shape = [batch, m, n];
-            let mut c = unsafe { CudaTensor::<T>::uninit(a.context(), &c_shape)? };
-
             // Perform batched matmul by treating A as batch*M x K and B as K x N
             // Then reshape result
             let a_2d = a.reshape(&[batch * m, k]);
             let c_2d = matmul_2d(&a_2d, b)?;
-            c = c_2d.reshape(&c_shape);
+            let c = c_2d.reshape(&[batch, m, n]);
 
             Ok(c)
         }
@@ -52,7 +51,8 @@ where
 /// 2D matrix multiplication: (M, K) @ (K, N) -> (M, N)
 fn matmul_2d<T>(a: &CudaTensor<T>, b: &CudaTensor<T>) -> Result<CudaTensor<T>>
 where
-    T: TensorDType + DeviceRepr + Gemm + Default,
+    T: TensorDType + DeviceRepr + GemmScalar + Default,
+    CudaBlas: Gemm<T>,
 {
     let a_shape = a.shape();
     let b_shape = b.shape();
@@ -97,7 +97,8 @@ where
 /// Batched 3D matrix multiplication: (B, M, K) @ (B, K, N) -> (B, M, N)
 fn matmul_batched<T>(a: &CudaTensor<T>, b: &CudaTensor<T>) -> Result<CudaTensor<T>>
 where
-    T: TensorDType + DeviceRepr + Gemm + Default,
+    T: TensorDType + DeviceRepr + GemmScalar + Default,
+    CudaBlas: Gemm<T>,
 {
     let a_shape = a.shape();
     let b_shape = b.shape();
@@ -151,9 +152,11 @@ where
     Ok(c)
 }
 
-/// Trait extension for GEMM scalar values
-trait GemmScalar {
+/// Trait for GEMM scalar values (alpha/beta coefficients)
+pub trait GemmScalar {
+    /// The multiplicative identity (1.0)
     const ONE: Self;
+    /// The additive identity (0.0)
     const ZERO: Self;
 }
 
