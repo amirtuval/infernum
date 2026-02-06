@@ -8,6 +8,7 @@ use std::io::{self, Write};
 
 use infernum::cuda::CudaContext;
 use infernum::llama::LlamaModel;
+use infernum::tensor::Tensor;
 use infernum::tokenizer::LlamaTokenizer;
 use infernum::Result;
 
