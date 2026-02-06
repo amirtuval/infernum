@@ -50,14 +50,22 @@ jobs:
         id: cache-cuda
         uses: actions/cache@v4
         with:
-          path: /usr/local/cuda-12.6
-          key: cuda-toolkit-12-6-ubuntu2404
+          path: ~/cuda-toolkit
+          key: cuda-toolkit-12-6-ubuntu2404-v2
 
       - name: Install CUDA toolkit
         if: steps.cache-cuda.outputs.cache-hit != 'true'
         run: |
           sudo apt-get update
           sudo apt-get install -y cuda-toolkit-12-6
+          mkdir -p ~/cuda-toolkit
+          cp -r /usr/local/cuda-12.6/* ~/cuda-toolkit/
+
+      - name: Restore CUDA toolkit from cache
+        if: steps.cache-cuda.outputs.cache-hit == 'true'
+        run: |
+          sudo mkdir -p /usr/local/cuda-12.6
+          sudo cp -r ~/cuda-toolkit/* /usr/local/cuda-12.6/
 
       - name: Set CUDA environment
         run: |
