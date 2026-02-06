@@ -61,6 +61,7 @@ jobs:
             *This PR was automatically created by the Rust Update workflow.*
           branch: rust-update-${{ steps.latest.outputs.version }}
           base: main
+          reviewers: amirtuval
           labels: |
             rust-update
             automation
