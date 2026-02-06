@@ -11,6 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Get current Rust version
         id: current
@@ -58,6 +60,7 @@ jobs:
             ---
             *This PR was automatically created by the Rust Update workflow.*
           branch: rust-update-${{ steps.latest.outputs.version }}
+          base: main
           labels: |
             rust-update
             automation
