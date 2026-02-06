@@ -73,6 +73,14 @@ jobs:
       - name: Restore CUDA toolkit from cache
         if: steps.cache-cuda.outputs.cache-hit == 'true'
         run: |
+          # Debug: check what's in the cache before copying
+          echo "=== Contents of ~/cuda-toolkit ==="
+          ls -la ~/cuda-toolkit/ || echo "Directory does not exist or is empty"
+          echo "=== cuBLAS files in cache directory ==="
+          find ~/cuda-toolkit -name "*cublas*" 2>/dev/null | head -10 || echo "No cuBLAS files found in cache"
+          echo "=== All .so files in cache ==="
+          find ~/cuda-toolkit -name "*.so*" -type f 2>/dev/null | head -20 || echo "No .so files found"
+          # Now copy
           sudo mkdir -p /usr/local/cuda-12.6
           sudo cp -a ~/cuda-toolkit/* /usr/local/cuda-12.6/
           # Debug: verify cuBLAS files restored
