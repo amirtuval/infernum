@@ -10,13 +10,65 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  # Basic checks that don't require GPU (runs on free runners)
   check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
       - name: Check with Clippy (pedantic)
         run: cargo clippy -- -W clippy::pedantic
+
       - name: Check formatting
         run: cargo fmt --all -- --check
-      - name: Run tests
+
+      - name: Run tests (no CUDA)
         run: cargo test --all
+
+  # GPU tests using GitHub's hosted GPU runners
+  # Requires GitHub Team or Enterprise Cloud plan
+  # See: https://github.blog/changelog/2024-07-08-github-actions-gpu-hosted-runners-are-now-generally-available/
+  gpu-test:
+    runs-on: ubuntu-gpu-t4  # NVIDIA T4, 16GB VRAM, 4 vCPU, 28GB RAM
+    needs: check  # Only run after basic checks pass
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check CUDA availability
+        run: nvidia-smi
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-gpu-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build with CUDA
+        run: cargo build --features cuda
+
+      - name: Run CUDA tests
+        run: cargo test --features cuda
+
+      # Optional: smoke test with a real model
+      # Uncomment and set LLAMA_MODEL_PATH secret to enable
+      # - name: Run generation example
+      #   env:
+      #     LLAMA_MODEL_PATH: ${{ secrets.LLAMA_MODEL_PATH }}
+      #   if: ${{ env.LLAMA_MODEL_PATH != '' }}
+      #   run: |
+      #     cargo run --example generate --features cuda -- \
+      #       --model "$LLAMA_MODEL_PATH" \
+      #       --max-tokens 10 \
+      #       "Hello"
