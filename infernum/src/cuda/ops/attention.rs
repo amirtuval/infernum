@@ -2,8 +2,8 @@
 
 use cudarc::driver::{LaunchAsync, LaunchConfig};
 
+use super::matmul;
 use crate::cuda::CudaTensor;
-use crate::ops::matmul;
 use crate::tensor::Tensor;
 use crate::Result;
 

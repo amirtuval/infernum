@@ -2,9 +2,9 @@
 
 use std::path::Path;
 
+use crate::cuda::ops::{apply_rope, attention, matmul, precompute_rope_cache, rms_norm, silu_mul};
 use crate::cuda::{CudaContext, CudaTensor};
 use crate::llama::LlamaConfig;
-use crate::ops::{apply_rope, attention, matmul, precompute_rope_cache, rms_norm, silu_mul};
 use crate::tensor::Tensor;
 use crate::weights::{SafeTensorsLoader, WeightLoader};
 use crate::Result;

@@ -11,8 +11,6 @@ pub mod cuda;
 pub mod dtype;
 pub mod error;
 pub mod llama;
-#[cfg(feature = "cuda")]
-pub mod ops;
 pub mod tensor;
 pub mod tokenizer;
 pub mod weights;
