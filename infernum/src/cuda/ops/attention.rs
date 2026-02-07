@@ -203,7 +203,7 @@ fn softmax_batched(scores: &CudaTensor<f32>) -> Result<CudaTensor<f32>> {
 
     // Reshape to (batch * seq, seq) for softmax
     let flat = scores.reshape(&[batch * seq, seq]);
-    let probs = crate::ops::softmax(&flat)?;
+    let probs = super::softmax(&flat)?;
     Ok(probs.reshape(&[batch, seq, seq]))
 }
 
